@@ -11,4 +11,5 @@ router
   .put(readers.update)
   .delete(readers.delete);
 
+router.route("/:id/:state").get(readers.changeState);
 module.exports = router;

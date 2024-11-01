@@ -14,7 +14,9 @@ class Book_Service {
       year: payload.year,
       price: payload.price,
       img: payload.img,
-      publisherId: payload.publisherId,
+      publisherId: payload.publisherId
+        ? new ObjectId(payload.publisherId)
+        : undefined,
     };
     Object.keys(book).forEach(
       (key) => book[key] === undefined && delete book[key]
@@ -33,19 +35,90 @@ class Book_Service {
   }
 
   async find(filter) {
-    const cursor = await this.Book.find(filter);
-    return await cursor.toArray();
+    const cursor = await this.Book.aggregate([
+      { $match: filter }, // Kết hợp với bộ lọc
+      {
+        $lookup: {
+          from: "publishers",
+          localField: "publisherId",
+          foreignField: "_id",
+          as: "publisherDetails",
+        },
+      },
+      { $unwind: "$publisherDetails" }, // Làm phẳng mảng publisherDetails
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          author: 1,
+          category: 1,
+          quantity: 1,
+          year: 1,
+          price: 1,
+          img: 1,
+          publisherDetails: 1, // Chỉ lấy tên nhà xuất bản
+        },
+      },
+    ]);
+
+    return await cursor.toArray(); // Chuyển đổi con trỏ thành mảng
   }
 
   async findByName(name) {
-    return await this.find({
-      title: { $regex: new RegExp(name), $options: "i" }, //toán tử regex-trong MongoDB cho phép tìm doc mà name chứa chuổi con khớp với biểu thức chính quy được tạo bởi new RegExp(name), op i ko phân biệt hoa thường
-    });
+    return await this.Book.aggregate([
+      { title: { $regex: new RegExp(name), $options: "i" } }, // Kết hợp với bộ lọc
+      {
+        $lookup: {
+          from: "publishers",
+          localField: "publisherId",
+          foreignField: "_id",
+          as: "publisherDetails",
+        },
+      },
+      { $unwind: "$publisherDetails" }, // Làm phẳng mảng publisherDetails
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          author: 1,
+          category: 1,
+          quantity: 1,
+          year: 1,
+          price: 1,
+          img: 1,
+          publisherDetails: 1, // Chỉ lấy tên nhà xuất bản
+        },
+      },
+    ]).toArray();
   }
   async findById(id) {
-    return await this.Book.findOne({
-      _id: ObjectId.isValid(id) ? new ObjectId(id) : null, // kiểm tra xem id có hợp lệ hay không nếu có nó sẽ tạo ra và tìm kiếm bằng _id
-    });
+    const result = await this.Book.aggregate([
+      { $match: { _id: ObjectId.isValid(id) ? new ObjectId(id) : null } },
+      {
+        $lookup: {
+          from: "publishers",
+          localField: "publisherId",
+          foreignField: "_id",
+          as: "publisherDetails",
+        },
+      },
+      { $unwind: "$publisherDetails" },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          author: 1,
+          category: 1,
+          quantity: 1,
+          year: 1,
+          price: 1,
+          img: 1,
+          publisherDetails: 1,
+        },
+      },
+    ]).toArray();
+
+    return result[0] || null; // Lấy phần tử đầu tiên hoặc null nếu không có kết quả
   }
 
   async update(id, payload) {
@@ -66,6 +139,40 @@ class Book_Service {
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
     });
     return result;
+  }
+
+  // async findByYear(currentyear) {
+  //   return await this.Book.find({
+  //     year: currentyear,
+  //   }).toArray();
+  // }
+
+  async findByYear(currentyear) {
+    return await this.Book.aggregate([
+      { $match: { year: currentyear } }, // Match books by the specified year
+      {
+        $lookup: {
+          from: "publishers", // The name of the publisher collection
+          localField: "publisherId", // Field in the books collection
+          foreignField: "_id", // Field in the publishers collection
+          as: "publisherDetails", // Output array field for publisher data
+        },
+      },
+      { $unwind: "$publisherDetails" }, // Flatten the array of publisher details
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          author: 1,
+          category: 1,
+          quantity: 1,
+          year: 1,
+          price: 1,
+          img: 1,
+          publisherDetails: 1, // Include only the publisher's name
+        },
+      },
+    ]).toArray();
   }
 }
 

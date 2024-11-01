@@ -140,6 +140,24 @@ exports.update = async (req, res, next) => {
   }
 };
 
+exports.changeState = async (req, res, next) => {
+  try {
+    const readerService = new ReaderService(MongoDB.client);
+    const document = await readerService.changeState(
+      req.params.id,
+      req.params.state
+    );
+    if (!document) {
+      return next(new ApiError(404, "Không tìm thấy độc giả"));
+    }
+    return res.send(document);
+  } catch (error) {
+    return next(
+      new ApiError(500, `Không tìm thấy độc giả id=${req.params.id}`)
+    );
+  }
+};
+
 exports.delete = async (req, res, next) => {
   try {
     const readerService = new ReaderService(MongoDB.client);

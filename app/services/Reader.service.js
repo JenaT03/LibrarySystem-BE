@@ -13,6 +13,7 @@ class Reader_Service {
       phone: payload.phone,
       password: payload.password,
       address: payload.address,
+      state: payload.state,
     };
 
     Object.keys(reader).forEach(
@@ -23,6 +24,7 @@ class Reader_Service {
 
   async create(payload) {
     const reader = this.extractReaderData(payload);
+    reader.state = "active";
     const result = await this.Reader.findOneAndUpdate(
       reader,
       { $set: reader },
@@ -67,11 +69,28 @@ class Reader_Service {
     return result;
   }
 
+  async changeState(id, state) {
+    const reader = await this.findById(id);
+    const result = await this.Reader.findOneAndUpdate(
+      reader,
+      { $set: { state: state } },
+      { returnDocument: "after" }
+    );
+    return result;
+  }
+
   async delete(id) {
     const result = await this.Reader.findOneAndDelete({
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
     });
     return result;
+  }
+
+  async auth(phone, password) {
+    return await this.find({
+      phone: { $regex: new RegExp(phone) },
+      password: password,
+    });
   }
 }
 

@@ -5,6 +5,9 @@ const bookRouter = require("./app/routes/Book.route");
 const publisherRouter = require("./app/routes/Publisher.route");
 const readerRouter = require("./app/routes/Reader.route");
 const staffRouter = require("./app/routes/Staff.route");
+const borrowedBookRouter = require("./app/routes/BorrowedBook.route");
+const authRouter = require("./app/routes/Auth.route");
+const path = require("path");
 
 const app = express();
 
@@ -15,14 +18,19 @@ app.get("/", (req, res) => {
   res.json({ message: "Chào bạn nhe" });
 });
 
-app.use("/api/book", bookRouter);
-app.use("/api/publisher", publisherRouter);
-app.use("/api/reader", readerRouter);
-app.use("/api/staff", staffRouter);
-
+app.use("/api/books", bookRouter);
+app.use("/api/publishers", publisherRouter);
+app.use("/api/readers", readerRouter);
+app.use("/api/staffs", staffRouter);
+app.use("/api/borrowedBooks", borrowedBookRouter);
+app.use("/api/auth", authRouter);
+app.use(
+  "/uploads/images",
+  express.static(path.join(__dirname, "/app/uploads/images"))
+);
 app.use((req, res, next) => {
   //code ở đây sẽ chạy khoong có route nào được định nghĩa khớp với req, gọi next() để chuyển sang midleware xử lý lỗi
-  return next(new ApiError(404, "Resource not found"));
+  return next(new ApiError(404, "Không thể tìm thấy tài nguyên"));
 });
 
 // midleware xử lý lỗi

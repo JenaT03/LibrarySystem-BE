@@ -75,6 +75,13 @@ class Staff_Service {
     });
     return result;
   }
+
+  async auth(email, password) {
+    return await this.find({
+      email: email,
+      password: password,
+    });
+  }
 }
 
 module.exports = Staff_Service;
