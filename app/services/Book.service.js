@@ -56,7 +56,7 @@ class Book_Service {
           year: 1,
           price: 1,
           img: 1,
-          publisherDetails: 1, // Chỉ lấy tên nhà xuất bản
+          publisherDetails: 1,
         },
       },
     ]);
@@ -86,7 +86,7 @@ class Book_Service {
           year: 1,
           price: 1,
           img: 1,
-          publisherDetails: 1, // Chỉ lấy tên nhà xuất bản
+          publisherDetails: 1,
         },
       },
     ]).toArray();

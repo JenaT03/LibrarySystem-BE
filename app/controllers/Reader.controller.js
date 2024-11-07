@@ -80,6 +80,19 @@ exports.getById = async (req, res, next) => {
   }
 };
 
+exports.getByPhone = async (req, res, next) => {
+  try {
+    const readerService = new ReaderService(MongoDB.client);
+    const document = await readerService.findByPhone(req.params.id);
+    if (!document) {
+      return next(new ApiError(404, "Không tìm thấy độc giả"));
+    }
+    return res.send(document);
+  } catch (error) {
+    return next(new ApiError(500, `Lỗi lấy độc giả có phone=${req.params.id}`));
+  }
+};
+
 exports.update = async (req, res, next) => {
   if (Object.keys(req.body).length === 0) {
     return next(new ApiError(400, "Dữ liệu cập nhật không thể để rỗng"));

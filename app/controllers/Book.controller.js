@@ -22,7 +22,6 @@ exports.create = [
   async (req, res, next) => {
     const { title, category, quantity, year, price, publisherId } = req.body;
     const img = req.file ? req.file.filename : null;
-    console.log(req.file);
     if (!title) {
       return next(new ApiError(400, "Tựa đề không được để trống"));
     }

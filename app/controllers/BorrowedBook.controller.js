@@ -24,11 +24,11 @@ exports.updateState = async (req, res, next) => {
       return next(new ApiError(404, "Không tìm thấy phiếu mượn sách"));
     }
     return res.send({
-      message: "Cập nhật trạng thái sách thành công",
+      message: "Cập nhật trạng thái phiếu mượn thành công",
     });
   } catch (error) {
     console.error(
-      `Lỗi cập nhật phiếu mươn sách có ID ${req.params.id}:`,
+      `Lỗi cập nhật phiếu mượn sách có ID ${req.params.id}:`,
       error.message
     );
     return next(
@@ -70,5 +70,63 @@ exports.delete = async (req, res, next) => {
     return res.send({ message: "Đã xóa thẻ mượn sách thành công" });
   } catch (error) {
     return next(new ApiError(500, `Không thể xóa thẻ có id= ${req.params.id}`));
+  }
+};
+
+exports.getAll = async (req, res, next) => {
+  let documents = [];
+
+  try {
+    const borowedBookService = new BorrowedBookService(MongoDB.client);
+    documents = await borowedBookService.find({});
+  } catch (error) {
+    console.error("Lỗi lấy phiếu mượn:", error.message);
+    console.error("Stack trace:", error.stack);
+    return next(
+      new ApiError(500, "Có lỗi xảy ra trong quá trình lấy phiếu mượn")
+    );
+  }
+
+  return res.send(documents);
+};
+
+exports.getAllOfReader = async (req, res, next) => {
+  try {
+    const borowedBookService = new BorrowedBookService(MongoDB.client);
+    const document = await borowedBookService.findBorrowOfReader(req.params.id);
+    if (!document) {
+      return next(new ApiError(404, "Không tìm thấy phiếu mượn của độc giả"));
+    }
+    return res.send(document);
+  } catch (error) {
+    return next(
+      new ApiError(500, `Lỗi lấy phiếu mượn của độc giả có id=${req.params.id}`)
+    );
+  }
+};
+
+exports.getOverDueBorrows = async (req, res, next) => {
+  try {
+    const borowedBookService = new BorrowedBookService(MongoDB.client);
+    const overdueDocuments = await borowedBookService.findOverDueBorrows();
+    if (!overdueDocuments || overdueDocuments.length === 0) {
+      return next(new ApiError(404, "Không tìm thấy phiếu mượn nào quá hạn"));
+    }
+    return res.send(overdueDocuments);
+  } catch (error) {
+    return next(new ApiError(500, `Lỗi lấy phiếu mượn quá hạn`));
+  }
+};
+
+exports.getOutOfStockBooks = async (req, res, next) => {
+  try {
+    const borowedBookService = new BorrowedBookService(MongoDB.client);
+    const documents = await borowedBookService.findOutOfStockBooks();
+    if (!documents || documents.length === 0) {
+      return next(new ApiError(404, "Không có sách nào hết hàng"));
+    }
+    return res.send(documents);
+  } catch (error) {
+    return next(new ApiError(500, `Lỗi lấy sách hết hàng`));
   }
 };

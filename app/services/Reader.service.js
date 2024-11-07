@@ -46,7 +46,7 @@ class Reader_Service {
 
   async findByPhone(phone) {
     return await this.find({
-      phone: { $regex: new RegExp(phone) },
+      phone: { $regex: new RegExp(`^${phone}$`) },
     });
   }
 
