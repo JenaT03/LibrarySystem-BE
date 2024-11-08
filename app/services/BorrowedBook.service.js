@@ -337,6 +337,32 @@ class BorrowedBook_Service {
     ]).toArray();
     return outOfStockBooks;
   }
+
+  async updateDueDate(id) {
+    const filter = {
+      _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
+    };
+
+    // Lấy và chuyển đổi `dueDate` từ string sang Date
+    const currentRecord = await this.BorrowedBook.findOne(filter);
+    let dueDate = new Date(currentRecord.dueDate);
+    // Cộng thêm 10 ngày vào `dueDate`
+    dueDate.setDate(dueDate.getDate() + 10);
+
+    // Chuyển `dueDate` thành chuỗi "yyyy-mm-dd"
+    const updatedDueDateString = dueDate.toISOString().split("T")[0];
+
+    // Thực hiện cập nhật
+    const update = {
+      $set: {
+        dueDate: updatedDueDateString,
+      },
+    };
+    const result = await this.BorrowedBook.findOneAndUpdate(filter, update, {
+      returnDocument: "after",
+    });
+    return result;
+  }
 }
 
 module.exports = BorrowedBook_Service;

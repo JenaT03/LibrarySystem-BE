@@ -130,3 +130,16 @@ exports.getOutOfStockBooks = async (req, res, next) => {
     return next(new ApiError(500, `Lỗi lấy sách hết hàng`));
   }
 };
+
+exports.renewBorrow = async (req, res, next) => {
+  try {
+    const borowedBookService = new BorrowedBookService(MongoDB.client);
+    const documents = await borowedBookService.updateDueDate(req.params.id);
+    if (!documents) {
+      return next(new ApiError(404, "Gia hạn sách thất bại"));
+    }
+    return res.send({ message: "Gia hạn sách thành công" });
+  } catch (error) {
+    return next(new ApiError(500, `Lỗi lấy gia hạn phiếu mượn`));
+  }
+};

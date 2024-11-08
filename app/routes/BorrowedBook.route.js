@@ -17,4 +17,6 @@ router
   .route("/borrows/out-of-stock-books")
   .get(borrowedBooks.getOutOfStockBooks);
 
+router.route("/renew/:id").put(borrowedBooks.renewBorrow);
+
 module.exports = router;
