@@ -93,6 +93,19 @@ exports.getById = async (req, res, next) => {
   }
 };
 
+exports.getByEmail = async (req, res, next) => {
+  try {
+    const staffService = new SatffService(MongoDB.client);
+    const document = await staffService.findByEmail(req.params.email);
+    if (!document) {
+      return next(new ApiError(404, "Không tìm thấy nhân viên"));
+    }
+    return res.send(document);
+  } catch (error) {
+    return next(new ApiError(500, `Lỗi lấy nhân viên có id=${req.params.id}`));
+  }
+};
+
 exports.update = async (req, res, next) => {
   if (!req.body?.name) {
     return next(new ApiError(400, "Tên không được để trống"));

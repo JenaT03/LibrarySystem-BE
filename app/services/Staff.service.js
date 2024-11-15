@@ -50,6 +50,12 @@ class Staff_Service {
     });
   }
 
+  async findByEmail(email) {
+    return await this.find({
+      email: email,
+    });
+  }
+
   async findById(id) {
     return await this.Staff.findOne({
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,

@@ -11,4 +11,5 @@ router
   .put(staffs.update)
   .delete(staffs.delete);
 
+router.route("/email/:email").get(staffs.getByEmail);
 module.exports = router;
