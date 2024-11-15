@@ -118,6 +118,21 @@ exports.getOverDueBorrows = async (req, res, next) => {
   }
 };
 
+exports.getRejectedBorrows = async (req, res, next) => {
+  try {
+    const borowedBookService = new BorrowedBookService(MongoDB.client);
+    const rejectedDocuments = await borowedBookService.findRejectedBorrows();
+    if (!rejectedDocuments || rejectedDocuments.length === 0) {
+      return next(
+        new ApiError(404, "Không tìm thấy phiếu mượn nào bị từ chối")
+      );
+    }
+    return res.send(rejectedDocuments);
+  } catch (error) {
+    return next(new ApiError(500, `Lỗi lấy phiếu mượn bị từ chối`));
+  }
+};
+
 exports.getOutOfStockBooks = async (req, res, next) => {
   try {
     const borowedBookService = new BorrowedBookService(MongoDB.client);

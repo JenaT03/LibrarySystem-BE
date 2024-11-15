@@ -105,6 +105,21 @@ class BorrowedBook_Service {
     return result;
   }
 
+  async updateStateWithouStaff(id, newState) {
+    const filter = {
+      _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
+    };
+    const update = {
+      $set: {
+        state: newState,
+      },
+    };
+    const result = await this.BorrowedBook.findOneAndUpdate(filter, update, {
+      returnDocument: "after",
+    });
+    return result;
+  }
+
   async delete(id) {
     const result = await this.BorrowedBook.findOneAndDelete({
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
@@ -269,12 +284,86 @@ class BorrowedBook_Service {
 
     const updatedDocuments = await Promise.all(
       overdueDocuments.map(async (element) => {
-        await this.updateState(
-          element._id,
-          "overdue",
-          element.staffDetails._id
-        );
+        await this.updateStateWithouStaff(element._id, "overdue");
         element.state = "overdue"; // Cập nhật trạng thái trong `element` sau khi cập nhật CSDL
+        return element;
+      })
+    );
+
+    return updatedDocuments;
+  }
+
+  async findRejectedBorrows() {
+    const currentDate = new Date();
+
+    const rejectedDocuments = await this.BorrowedBook.aggregate([
+      {
+        // Chuyển đổi `dueDate` từ chuỗi sang kiểu Date
+        $addFields: {
+          dueDateAsDate: { $dateFromString: { dateString: "$dueDate" } },
+        },
+      },
+      {
+        // Lọc các phiếu mượn quá hạn có `dueDate` nhỏ hơn ngày hiện tại và trạng thái là "borrowed"
+        $match: {
+          dueDateAsDate: { $lt: currentDate },
+          state: { $in: ["pending", "rejected"] },
+        },
+      },
+
+      {
+        $lookup: {
+          from: "readers",
+          localField: "readerId",
+          foreignField: "_id",
+          as: "readerDetails",
+        },
+      },
+      {
+        $unwind: "$readerDetails", // chuyển đổi các mảng thành các đối tượng
+      },
+      {
+        $lookup: {
+          from: "staffs",
+          localField: "staffId",
+          foreignField: "_id",
+          as: "staffDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$staffDetails",
+          preserveNullAndEmptyArrays: true, // `staffDetails` là `null` nếu không có `staffId`
+        },
+      },
+      {
+        $lookup: {
+          from: "books",
+          localField: "bookId",
+          foreignField: "_id",
+          as: "bookDetails",
+        },
+      },
+      {
+        $unwind: "$bookDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          state: 1,
+          borrowDate: 1,
+          dueDate: 1,
+          readerDetails: 1,
+          bookDetails: 1,
+          staffDetails: 1,
+        },
+      },
+    ]).toArray();
+
+    const updatedDocuments = await Promise.all(
+      rejectedDocuments.map(async (element) => {
+        await this.updateStateWithouStaff(element._id, "rejected");
+        element.state = "rejected"; // Cập nhật trạng thái trong `element` sau khi cập nhật CSDL
         return element;
       })
     );

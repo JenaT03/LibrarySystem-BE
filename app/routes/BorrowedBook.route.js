@@ -13,6 +13,7 @@ router
 
 router.route("/state/:state").get(borrowedBooks.getByState);
 router.route("/borrows/overdue").get(borrowedBooks.getOverDueBorrows);
+router.route("/borrows/rejected").get(borrowedBooks.getRejectedBorrows);
 router
   .route("/borrows/out-of-stock-books")
   .get(borrowedBooks.getOutOfStockBooks);
