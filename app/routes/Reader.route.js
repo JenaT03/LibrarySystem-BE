@@ -11,5 +11,5 @@ router
   .delete(readers.delete);
 
 router.route("/phone/:id").get(readers.getByPhone);
-router.route("/:id/:state").get(readers.changeState);
+router.route("/:id/change-state").put(readers.changeState);
 module.exports = router;

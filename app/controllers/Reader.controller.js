@@ -158,7 +158,7 @@ exports.changeState = async (req, res, next) => {
     const readerService = new ReaderService(MongoDB.client);
     const document = await readerService.changeState(
       req.params.id,
-      req.params.state
+      req.body.state
     );
     if (!document) {
       return next(new ApiError(404, "Không tìm thấy độc giả"));
@@ -166,7 +166,7 @@ exports.changeState = async (req, res, next) => {
     return res.send(document);
   } catch (error) {
     return next(
-      new ApiError(500, `Không tìm thấy độc giả id=${req.params.id}`)
+      new ApiError(500, `Không tìm thấy độc giả trang thái id=${req.params.id}`)
     );
   }
 };
