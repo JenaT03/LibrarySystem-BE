@@ -34,13 +34,12 @@ exports.getAll = async (req, res, next) => {
 
   try {
     const publisherService = new PublisherService(MongoDB.client);
-    const { title } = req.query;
+    documents = await publisherService.find({});
 
-    if (title) {
-      documents = await publisherService.findByTitle(title);
-    } else {
-      documents = await publisherService.find({});
+    if (!documents) {
+      return next(new ApiError(404, "Không tìm thấy nhà xuất bản"));
     }
+    return res.send(documents);
   } catch (error) {
     console.error("Lỗi lấy thông tin nhà xuất bản:", error.message);
     console.error("Stack trace:", error.stack);

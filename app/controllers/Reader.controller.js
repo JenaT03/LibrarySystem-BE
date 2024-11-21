@@ -49,13 +49,11 @@ exports.getAll = async (req, res, next) => {
 
   try {
     const readerService = new ReaderService(MongoDB.client);
-    const { title } = req.query;
-
-    if (title) {
-      documents = await readerService.findByTitle(title);
-    } else {
-      documents = await readerService.find({});
+    documents = await readerService.find({});
+    if (!documents) {
+      return next(new ApiError(404, "Không tìm thấy độc giả"));
     }
+    return res.send(documents);
   } catch (error) {
     console.error("Lỗi lấy thông tin độc giả:", error.message);
     console.error("Stack trace:", error.stack);
@@ -63,8 +61,6 @@ exports.getAll = async (req, res, next) => {
       new ApiError(500, "Có lỗi xảy ra trong quá trình lấy thông tin độc giả")
     );
   }
-
-  return res.send(documents);
 };
 
 exports.getById = async (req, res, next) => {

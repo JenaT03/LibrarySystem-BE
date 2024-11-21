@@ -79,6 +79,10 @@ exports.getAll = async (req, res, next) => {
   try {
     const borowedBookService = new BorrowedBookService(MongoDB.client);
     documents = await borowedBookService.find({});
+    if (!documents) {
+      return next(new ApiError(404, "Không tìm thấy phiếu mượn nào"));
+    }
+    return res.send(documents);
   } catch (error) {
     console.error("Lỗi lấy phiếu mượn:", error.message);
     console.error("Stack trace:", error.stack);
@@ -86,8 +90,6 @@ exports.getAll = async (req, res, next) => {
       new ApiError(500, "Có lỗi xảy ra trong quá trình lấy phiếu mượn")
     );
   }
-
-  return res.send(documents);
 };
 
 exports.getAllOfReader = async (req, res, next) => {

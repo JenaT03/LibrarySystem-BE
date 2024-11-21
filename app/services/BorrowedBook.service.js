@@ -46,7 +46,7 @@ class BorrowedBook_Service {
         },
       },
       {
-        $unwind: "$readerDetails", // chuyển đổi các mảng thành các đối tượng
+        $unwind: "$readerDetails",
       },
       {
         $lookup: {
@@ -129,7 +129,6 @@ class BorrowedBook_Service {
 
   async find() {
     const borrowedBooks = await this.BorrowedBook.aggregate([
-      //thực hiện các left join giữa các bảng
       {
         $lookup: {
           from: "readers",
@@ -139,7 +138,7 @@ class BorrowedBook_Service {
         },
       },
       {
-        $unwind: "$readerDetails", // chuyển đổi các mảng thành các đối tượng
+        $unwind: "$readerDetails",
       },
       {
         $lookup: {
@@ -228,8 +227,15 @@ class BorrowedBook_Service {
       {
         // Lọc các phiếu mượn quá hạn có `dueDate` nhỏ hơn ngày hiện tại và trạng thái là "borrowed"
         $match: {
-          dueDateAsDate: { $lt: currentDate },
-          state: { $in: ["borrowed", "overdue"] },
+          $or: [
+            {
+              state: "borrowed",
+              dueDateAsDate: { $lt: currentDate },
+            },
+            {
+              state: "overdue",
+            },
+          ],
         },
       },
 
@@ -242,7 +248,7 @@ class BorrowedBook_Service {
         },
       },
       {
-        $unwind: "$readerDetails", // chuyển đổi các mảng thành các đối tượng
+        $unwind: "$readerDetails",
       },
       {
         $lookup: {
@@ -304,7 +310,6 @@ class BorrowedBook_Service {
         },
       },
       {
-        // Lọc các phiếu mượn quá hạn có `dueDate` nhỏ hơn ngày hiện tại và trạng thái là "borrowed"
         $match: {
           $or: [
             {
@@ -327,7 +332,7 @@ class BorrowedBook_Service {
         },
       },
       {
-        $unwind: "$readerDetails", // chuyển đổi các mảng thành các đối tượng
+        $unwind: "$readerDetails",
       },
       {
         $lookup: {
@@ -408,7 +413,7 @@ class BorrowedBook_Service {
           },
         },
       },
-      // Đếm số phiếu mượn "borrowed" và "overdue" cho mỗi quyển sách
+      // Đếm số phiếu mượn "borrowed","pending" và "overdue" cho mỗi quyển sách
       {
         $addFields: {
           activeBorrowCount: { $size: "$activeBorrows" },

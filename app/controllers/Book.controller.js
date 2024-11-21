@@ -7,18 +7,19 @@ const path = require("path");
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "app/uploads/images"); // Thư mục chứa ảnh
+    // Xác định thư mục lưu file.
+    cb(null, "app/uploads/images"); // callback chỉ định thư mục lưu trữ.
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + path.extname(file.originalname)); // Đặt tên file với timestamp
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage: storage }); //Tạo middleware upload để sử dụng trong các route xử lý upload file.
 
 // Hàm để xử lý khi tạo sách mới
 exports.create = [
-  upload.single("img"),
+  upload.single("img"), //xử lý việc upload một file đơn lẻ từ form dữ liệu có một trường nhất định.
   async (req, res, next) => {
     const { title, category, quantity, year, price, publisherId } = req.body;
     const img = req.file ? req.file.filename : null;
@@ -160,6 +161,18 @@ exports.update = [
       const document = await bookService.update(req.params.id, updatedData);
       if (!document) {
         return next(new ApiError(404, "Không tìm thấy sách"));
+      }
+      if (req.file) {
+        const oldImagePath = path.join(
+          __dirname,
+          "app/uploads/images",
+          req.body.img
+        );
+
+        // Kiểm tra nếu file cũ tồn tại và xóa nó
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath); // Xóa file cũ
+        }
       }
       return res.send({ message: "Cập nhật sách thành công" });
     } catch (error) {

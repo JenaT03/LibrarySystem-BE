@@ -26,7 +26,7 @@ app.use("/api/borrowedBooks", borrowedBookRouter);
 app.use("/api/auth", authRouter);
 app.use(
   "/uploads/images",
-  express.static(path.join(__dirname, "/app/uploads/images"))
+  express.static(path.join(__dirname, "/app/uploads/images")) // phục vụ các tệp tĩnh từ /app/uploads/images
 );
 app.use((req, res, next) => {
   //code ở đây sẽ chạy khoong có route nào được định nghĩa khớp với req, gọi next() để chuyển sang midleware xử lý lỗi

@@ -36,9 +36,11 @@ class Book_Service {
 
   async find(filter) {
     const cursor = await this.Book.aggregate([
+      //Aggregation Pipeline là một chuỗi các giai đoạn
       { $match: filter }, // Kết hợp với bộ lọc
       {
         $lookup: {
+          //join
           from: "publishers",
           localField: "publisherId",
           foreignField: "_id",
@@ -141,24 +143,18 @@ class Book_Service {
     return result;
   }
 
-  // async findByYear(currentyear) {
-  //   return await this.Book.find({
-  //     year: currentyear,
-  //   }).toArray();
-  // }
-
   async findByYear(currentyear) {
     return await this.Book.aggregate([
-      { $match: { year: currentyear } }, // Match books by the specified year
+      { $match: { year: currentyear } },
       {
         $lookup: {
-          from: "publishers", // The name of the publisher collection
-          localField: "publisherId", // Field in the books collection
-          foreignField: "_id", // Field in the publishers collection
-          as: "publisherDetails", // Output array field for publisher data
+          from: "publishers",
+          localField: "publisherId",
+          foreignField: "_id",
+          as: "publisherDetails",
         },
       },
-      { $unwind: "$publisherDetails" }, // Flatten the array of publisher details
+      { $unwind: "$publisherDetails" },
       {
         $project: {
           _id: 1,
@@ -169,7 +165,7 @@ class Book_Service {
           year: 1,
           price: 1,
           img: 1,
-          publisherDetails: 1, // Include only the publisher's name
+          publisherDetails: 1,
         },
       },
     ]).toArray();

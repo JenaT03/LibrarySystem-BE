@@ -62,13 +62,11 @@ exports.getAll = async (req, res, next) => {
 
   try {
     const staffService = new SatffService(MongoDB.client);
-    const { title } = req.query;
-
-    if (title) {
-      documents = await staffService.findByTitle(title);
-    } else {
-      documents = await staffService.find({});
+    documents = await staffService.find({});
+    if (!documents) {
+      return next(new ApiError(404, "Không tìm thấy nhân viên"));
     }
+    return res.send(documents);
   } catch (error) {
     console.error("Lỗi lấy thông tin nhân viên:", error.message);
     console.error("Stack trace:", error.stack);
@@ -76,8 +74,6 @@ exports.getAll = async (req, res, next) => {
       new ApiError(500, "Có lỗi xảy ra trong quá trình lấy thông tin nhân viên")
     );
   }
-
-  return res.send(documents);
 };
 
 exports.getById = async (req, res, next) => {
