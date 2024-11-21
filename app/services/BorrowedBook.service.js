@@ -306,8 +306,15 @@ class BorrowedBook_Service {
       {
         // Lọc các phiếu mượn quá hạn có `dueDate` nhỏ hơn ngày hiện tại và trạng thái là "borrowed"
         $match: {
-          dueDateAsDate: { $lt: currentDate },
-          state: { $in: ["pending", "rejected"] },
+          $or: [
+            {
+              state: "pending",
+              dueDateAsDate: { $lt: currentDate },
+            },
+            {
+              state: "rejected",
+            },
+          ],
         },
       },
 
@@ -394,6 +401,7 @@ class BorrowedBook_Service {
                 $or: [
                   { $eq: ["$$borrow.state", "borrowed"] },
                   { $eq: ["$$borrow.state", "overdue"] },
+                  { $eq: ["$$borrow.state", "pending"] },
                 ],
               },
             },
